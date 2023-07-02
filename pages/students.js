@@ -9,25 +9,27 @@ import Image from "next/image";
 import SearchIcon from "@/core/components/icons/SearchIcon";
 import LeftArrowIcon from "@/core/components/icons/LeftArrowIcon";
 import RightArrowIcon from "@/core/components/icons/RightArrowIcon";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import Link from "next/link";
+import {ProgressBar} from 'react-loader-spinner';
+import axios from "axios";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 const Students = () => {
-    const [addData, setAddData] = useState([]);
     const [limit, setLimit] = useState(6);
     const [page, setPage] = useState(1);
     const [addVisible, setAddVisible] = useState(false);
+    const [modal, setModal] = useState(false);
+    const [selectedId, setSelectedId] = useState(null);
     const {register: searchForm, handleSubmit: handleSearchForm} = useForm();
-    const {register: addFrom, handleSubmit: handleAddForm} = useForm();
+    const {register: addFrom, handleSubmit: handleAddForm, reset: resetAddForm} = useForm();
     const changeLimit = (e) => {
         setLimit(parseInt(e.target.value));
     };
-    useEffect(() => {
-        fetch("https://dummyjson.com/users").then((res) => res.json()).then((data) => {
-            setAddData(data);
-        });
-    }, [addData]);
-    const data = addData?.users;
+    const {data: users} = useSWR('https://dummyjson.com/users?limit=100');
+    const data = users?.users;
+    const MySwal = withReactContent(Swal);
     const totalPages = Math.ceil(data?.length / limit);
     const leftArrow = () => {
         if (page > 1) {
@@ -44,20 +46,76 @@ const Students = () => {
     };
     const addStudent = async (data) => {
         setAddVisible(false);
-        console.log(addData);
-        // const newStudent = {
-        //     id: Math.floor(Math.random() * 1000),
-        //     firstName: data.firstName,
-        //     lastName: data.lastName,
-        //     email: data.email,
-        //     phone: data.phone,
-        //     domain: data.website,
-        //     company: {
-        //         name: data.company
-        //     },
-        //     image: "https://robohash.org/hicveldicta.png",
-        // };
-        // setAddData((prevData) => [newStudent, ...prevData]);
+        console.log(data.image);
+
+        await axios.post('https://dummyjson.com/users/add', {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone: data.phone,
+            website: data.website,
+            company: {
+                name: data.company,
+            },
+            image: data.image[0].name,
+        }).then((response) => {
+            console.log(response);
+            resetAddForm();
+            MySwal.fire({
+                title: "Kullanıcı eklendi!",
+                icon: "success",
+                confirmButtonText: "Tamam",
+                confirmButtonColor: "#FEAF00",
+            });
+        });
+    };
+    const showUpdateModal = (id) => {
+        setSelectedId(id)
+        setModal(true);
+    };
+    const deleteStudent = async (id) => {
+        MySwal.fire({
+            title: "Kullanıcıyı silmek istediğinize emin misiniz?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Evet",
+            cancelButtonText: "Hayır",
+            confirmButtonColor: "red",
+            cancelButtonColor: "green",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axios.delete(`https://dummyjson.com/users/${id}`).then((response) => {
+                    console.log(response);
+                    MySwal.fire({
+                        title: "Kullanıcı silindi!",
+                        icon: "success",
+                        confirmButtonText: "Tamam",
+                        confirmButtonColor: "#FEAF00",
+                    });
+                });
+            }
+        });
+    };
+    const editStudent = async () => {
+        await axios.put(`https://dummyjson.com/users/${selectedId}`, {
+            firstName: "John",
+            lastName: "Doe",
+            email: "",
+            phone: "",
+            website: "",
+            company: {
+                name: "",
+            },
+            image: "",
+        }).then((response) => {
+            console.log(response);
+            MySwal.fire({
+                title: "Kullanıcı güncellendi!",
+                icon: "success",
+                confirmButtonText: "Tamam",
+                confirmButtonColor: "#FEAF00",
+            });
+        });
     };
     const pageTitle = 'Students';
     return (
@@ -83,7 +141,8 @@ const Students = () => {
                 </div>
                 {addVisible && (
                     <div className={"my-10 w-full"}>
-                        <form className={"flex items-center gap-5"} onSubmit={handleAddForm(addStudent)}>
+                        <form className={"grid grid-cols-1 md:grid-cols-4 lg:grid-cols-8 items-center gap-5"}
+                              onSubmit={handleAddForm(addStudent)}>
                             <input className={styles.addInput} id={"firstName"} {...addFrom("firstName")}
                                    placeholder={"First Name"}/>
                             <input className={styles.addInput} id={"lastName"} {...addFrom("lastName")}
@@ -95,7 +154,9 @@ const Students = () => {
                             <input className={styles.addInput} id={"website"} {...addFrom("website")}
                                    placeholder={"Website"}/>
                             <input className={styles.addInput} id={"company"} {...addFrom("company")}
-                                   placeholder={"Company"}/>
+                                   placeholder={"Company Name"}/>
+                            <input type={"file"} className={styles.addInput} id={"image"} {...addFrom("image")}
+                                   placeholder={"Image"}/>
                             <button className={styles.addButton} type={"submit"}>Submit</button>
                         </form>
                     </div>
@@ -114,6 +175,21 @@ const Students = () => {
                         </tr>
                         </thead>
                         <tbody className={"bg-white"}>
+                        {!data && (
+                            <tr>
+                                <td className={"p-3 text-left w-[75px]"}>
+                                    <ProgressBar
+                                        height="80"
+                                        width="80"
+                                        ariaLabel="progress-bar-loading"
+                                        wrapperStyle={{}}
+                                        wrapperClass="progress-bar-wrapper"
+                                        borderColor='#FEAF00'
+                                        barColor='#F8D442'
+                                    />
+                                </td>
+                            </tr>
+                        )}
                         {data?.slice((page - 1) * limit, page * limit).map((item) => (
                             <tr className={""} key={item.id}>
                                 <td className={"p-3"}>
@@ -127,8 +203,9 @@ const Students = () => {
                                 <td className={"p-3"}>{item.company.name}</td>
                                 <td className={"p-3"}>
                                     <div className={"flex items-center justify-center gap-5"}>
-                                        <PenIcon onClick={() => alert("Edit")} className={"w-5 h-5 cursor-pointer"}/>
-                                        <TrashIcon onClick={() => alert("Delete")}
+                                        <PenIcon onClick={() => editStudent(item.id)}
+                                                 className={"w-5 h-5 cursor-pointer"}/>
+                                        <TrashIcon onClick={() => showUpdateModal(item.id)}
                                                    className={"w-5 h-5 cursor-pointer"}/>
                                     </div>
                                 </td>
