@@ -1,0 +1,19 @@
+.table {
+    @apply align-middle border-t border-[#E5E5E5] border-spacing-y-[10px] border-separate w-full text-sm;
+}
+
+.table td:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+.table td:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+.addInput {
+    @apply border border-[#E5E5E5] rounded-[8px] px-4 py-2 text-sm outline-none w-full;
+}
+
+.addButton {
+    @apply rounded-[4px] bg-[#FEAF00] text-white py-2 w-full;
+}

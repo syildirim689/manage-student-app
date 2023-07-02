@@ -1,0 +1,55 @@
+.container {
+    @apply flex flex-col items-center justify-center h-screen bg-gradient-to-r from-[#FEAF00] to-[#F8D442];
+}
+
+.box {
+    @apply bg-white shadow-lg rounded-[20px] p-10 lg:p-20;
+}
+
+.headText {
+    @apply text-center font-bold text-[32px] leading-[39.01px] text-black border-l-[6px] border-[#F8D442] pl-3;
+}
+
+.headSubText {
+    @apply text-center font-semibold text-[22px] leading-[26.82px] text-black mt-5 mb-1;
+}
+
+.descText {
+    @apply text-center font-normal text-[14px] leading-[17.07px] text-[#6C6C6C] mb-5;
+}
+
+.form {
+    @apply flex flex-col gap-5;
+}
+
+.formBlock {
+    @apply flex flex-col;
+}
+
+.formLabel {
+    @apply font-medium text-[14px] leading-[17.07px] text-[#6C6C6C] mb-2;
+}
+
+.formInput {
+    @apply border-[1px] border-[#E5E5E5] outline-none rounded-[4px] text-[14px] leading-[17.07px] py-3 px-3 w-full;
+}
+
+.formInput::placeholder {
+    @apply text-[12px] leading-[14.63px] font-normal text-[#CDCDCD];
+}
+
+.formButton {
+    @apply bg-[#FEAF00] rounded-[4px] text-white font-semibold text-[14px] leading-[17.07px] py-3 px-3 w-full;
+}
+
+.forgotBlock {
+    @apply flex items-center justify-center gap-2 font-normal text-[14px] leading-[17.07px] mt-5;
+}
+
+.forgotText {
+    @apply text-[#6C6C6C];
+}
+
+.forgotLink {
+    @apply text-[#FEAF00] underline;
+}
